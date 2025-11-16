@@ -1,0 +1,199 @@
+{
+  "id": "9a3d28c2-6d4d-4047-b1c4-37b30929e08b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.label_setups": {
+      "name": "label_setups",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "label_length_mm": {
+          "name": "label_length_mm",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "label_height_mm": {
+          "name": "label_height_mm",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "label_thickness_mm": {
+          "name": "label_thickness_mm",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "label_colour_background": {
+          "name": "label_colour_background",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text_colour": {
+          "name": "text_colour",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "label_quantity": {
+          "name": "label_quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "style": {
+          "name": "style",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "no_of_holes": {
+          "name": "no_of_holes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hole_size_mm": {
+          "name": "hole_size_mm",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hole_distance_mm": {
+          "name": "hole_distance_mm",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lines": {
+          "name": "lines",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "label_setups_user_id_users_id_fk": {
+          "name": "label_setups_user_id_users_id_fk",
+          "tableFrom": "label_setups",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
