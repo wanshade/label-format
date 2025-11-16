@@ -66,7 +66,7 @@ export default function LabelSetupWizard({
     if (initialData) {
       return {
         name: initialData.name,
-        projectId: initialData.projectId || '',
+        projectId: initialData.projectId || "",
         labelLengthMm: initialData.labelLengthMm,
         labelHeightMm: initialData.labelHeightMm,
         labelThicknessMm: initialData.labelThicknessMm,
@@ -80,7 +80,7 @@ export default function LabelSetupWizard({
       };
     }
     return {
-      projectId: projects[0]?.id || '',
+      projectId: projects[0]?.id || "",
       labelLengthMm: 50,
       labelHeightMm: 25,
       labelThicknessMm: 0.8,
@@ -174,7 +174,8 @@ export default function LabelSetupWizard({
         <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">
-              {editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} - Step 1 of 2
+              {editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} -
+              Step 1 of 2
             </h2>
             <p className="text-sm text-gray-600 mt-1">
               Basic Information & Label Properties
@@ -184,7 +185,9 @@ export default function LabelSetupWizard({
           <form onSubmit={handleSubmit(handleStep1Submit)} className="p-6">
             {/* Basic Information */}
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Basic Information
+              </h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -212,7 +215,9 @@ export default function LabelSetupWizard({
                     ))}
                   </select>
                   {errors.projectId && (
-                    <p className="text-red-600 text-xs mt-1">Project is required</p>
+                    <p className="text-red-600 text-xs mt-1">
+                      Project is required
+                    </p>
                   )}
                 </div>
               </div>
@@ -220,7 +225,9 @@ export default function LabelSetupWizard({
 
             {/* Label Properties */}
             <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Label Properties</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Label Properties
+              </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -233,7 +240,9 @@ export default function LabelSetupWizard({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   {errors.labelLengthMm && (
-                    <p className="text-red-600 text-xs mt-1">{errors.labelLengthMm.message}</p>
+                    <p className="text-red-600 text-xs mt-1">
+                      {errors.labelLengthMm.message}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -247,7 +256,9 @@ export default function LabelSetupWizard({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                   {errors.labelHeightMm && (
-                    <p className="text-red-600 text-xs mt-1">{errors.labelHeightMm.message}</p>
+                    <p className="text-red-600 text-xs mt-1">
+                      {errors.labelHeightMm.message}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -313,8 +324,7 @@ export default function LabelSetupWizard({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="Adhesive">Adhesive</option>
-                    <option value="Static">Static</option>
-                    <option value="Magnetic">Magnetic</option>
+                    <option value="Static">Non Adhesive</option>
                   </select>
                 </div>
                 <div>
@@ -382,7 +392,8 @@ export default function LabelSetupWizard({
         <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">
-              {editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} - Step 2 of 2
+              {editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} -
+              Step 2 of 2
             </h2>
             <p className="text-sm text-gray-600 mt-1">
               Add and configure text lines
@@ -392,7 +403,9 @@ export default function LabelSetupWizard({
           <div className="p-6">
             <div className="mb-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Text Lines ({lines.length})</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Text Lines ({lines.length})
+                </h3>
                 <button
                   type="button"
                   onClick={addLine}
@@ -404,7 +417,10 @@ export default function LabelSetupWizard({
 
               <div className="space-y-4">
                 {lines.map((line, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-4">
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4"
+                  >
                     <div className="flex justify-between items-start mb-3">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
                         Line {index + 1}
@@ -428,7 +444,9 @@ export default function LabelSetupWizard({
                         <input
                           type="text"
                           value={line.text}
-                          onChange={(e) => updateLine(index, "text", e.target.value)}
+                          onChange={(e) =>
+                            updateLine(index, "text", e.target.value)
+                          }
                           placeholder="Enter text for this line"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
@@ -443,7 +461,13 @@ export default function LabelSetupWizard({
                           step="0.1"
                           min="0"
                           value={line.textSizeMm}
-                          onChange={(e) => updateLine(index, "textSizeMm", parseFloat(e.target.value))}
+                          onChange={(e) =>
+                            updateLine(
+                              index,
+                              "textSizeMm",
+                              parseFloat(e.target.value)
+                            )
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                       </div>
@@ -455,7 +479,9 @@ export default function LabelSetupWizard({
                         <input
                           type="text"
                           value={line.spacingTopMm}
-                          onChange={(e) => updateLine(index, "spacingTopMm", e.target.value)}
+                          onChange={(e) =>
+                            updateLine(index, "spacingTopMm", e.target.value)
+                          }
                           placeholder="AUTO or number in mm"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
@@ -468,7 +494,9 @@ export default function LabelSetupWizard({
                         <input
                           type="text"
                           value={line.spacingLeftMm}
-                          onChange={(e) => updateLine(index, "spacingLeftMm", e.target.value)}
+                          onChange={(e) =>
+                            updateLine(index, "spacingLeftMm", e.target.value)
+                          }
                           placeholder="AUTO or number in mm"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
