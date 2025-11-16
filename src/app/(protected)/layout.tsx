@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/server-utils";
 import SignOutButton from "@/components/SignOutButton";
-import { Providers } from "@/components/providers";
+import Providers from "@/components/providers";
 
 export default async function ProtectedLayout({
   children,
