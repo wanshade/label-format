@@ -51,7 +51,9 @@ export async function generateExcelBufferFromLabelSetups(
     write(item.labelColourBackground);
     write(item.textColour);
     write(item.labelQuantity);
-    write(item.style);
+    // Convert "Static" to "Non Adhesive" for consistency
+    const displayStyle = item.style === "Static" ? "Non Adhesive" : item.style;
+    write(displayStyle);
     write(item.noOfHoles);
     write(item.holeSizeMm);
     write(item.holeDistanceMm);

@@ -324,7 +324,7 @@ export default function LabelSetupWizard({
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   >
                     <option value="Adhesive">Adhesive</option>
-                    <option value="Static">Non Adhesive</option>
+                    <option value="Non Adhesive">Non Adhesive</option>
                   </select>
                 </div>
                 <div>
