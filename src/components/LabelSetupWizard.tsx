@@ -4,8 +4,26 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Step 1: Basic Information and Label Properties
 const basicInfoSchema = z.object({
   name: z.string().optional(),
   projectId: z.string(),
@@ -98,15 +116,7 @@ export default function LabelSetupWizard({
     if (initialData && initialData.lines.length > 0) {
       return initialData.lines;
     }
-    // Start with 1 empty line
-    return [
-      {
-        text: "",
-        textSizeMm: 2,
-        spacingTopMm: "AUTO",
-        spacingLeftMm: "AUTO",
-      },
-    ];
+    return [{ text: "", textSizeMm: 2, spacingTopMm: "AUTO", spacingLeftMm: "AUTO" }];
   });
 
   const {
@@ -145,15 +155,7 @@ export default function LabelSetupWizard({
   };
 
   const addLine = () => {
-    setLines([
-      ...lines,
-      {
-        text: "",
-        textSizeMm: 2,
-        spacingTopMm: "AUTO",
-        spacingLeftMm: "AUTO",
-      },
-    ]);
+    setLines([...lines, { text: "", textSizeMm: 2, spacingTopMm: "AUTO", spacingLeftMm: "AUTO" }]);
   };
 
   const removeLine = (index: number) => {
@@ -170,371 +172,224 @@ export default function LabelSetupWizard({
 
   if (step === 1) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} -
-              Step 1 of 2
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Basic Information & Label Properties
-            </p>
-          </div>
+      <Dialog open={true} onOpenChange={onCancel}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} - Step 1 of 2</DialogTitle>
+            <DialogDescription>Basic Information & Label Properties</DialogDescription>
+          </DialogHeader>
 
-          <form onSubmit={handleSubmit(handleStep1Submit)} className="p-6">
-            {/* Basic Information */}
-            <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Basic Information
-              </h3>
+          <form onSubmit={handleSubmit(handleStep1Submit)} className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-medium text-foreground">Basic Information</h3>
               <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Setup Name
-                  </label>
-                  <input
-                    {...register("name")}
-                    type="text"
-                    placeholder="Optional name for this setup"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <Label>Setup Name</Label>
+                  <Input {...register("name")} placeholder="Optional name for this setup" />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Project *
-                  </label>
-                  <select
-                    {...register("projectId")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.projectId && (
-                    <p className="text-red-600 text-xs mt-1">
-                      Project is required
-                    </p>
-                  )}
+                <div className="space-y-2">
+                  <Label>Project *</Label>
+                  <Select value={watch("projectId")} onValueChange={(value) => setValue("projectId", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.projectId && <p className="text-sm text-destructive">Project is required</p>}
                 </div>
               </div>
             </div>
 
-            {/* Label Properties */}
-            <div className="mb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Label Properties
-              </h3>
+            <div className="space-y-4">
+              <h3 className="font-medium text-foreground">Label Properties</h3>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Length (mm) *
-                  </label>
-                  <input
-                    {...register("labelLengthMm", { valueAsNumber: true })}
-                    type="number"
-                    step="0.1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  {errors.labelLengthMm && (
-                    <p className="text-red-600 text-xs mt-1">
-                      {errors.labelLengthMm.message}
-                    </p>
-                  )}
+                <div className="space-y-2">
+                  <Label>Length (mm) *</Label>
+                  <Input type="number" step="0.1" {...register("labelLengthMm", { valueAsNumber: true })} />
+                  {errors.labelLengthMm && <p className="text-sm text-destructive">{errors.labelLengthMm.message}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Height (mm) *
-                  </label>
-                  <input
-                    {...register("labelHeightMm", { valueAsNumber: true })}
-                    type="number"
-                    step="0.1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  {errors.labelHeightMm && (
-                    <p className="text-red-600 text-xs mt-1">
-                      {errors.labelHeightMm.message}
-                    </p>
-                  )}
+                <div className="space-y-2">
+                  <Label>Height (mm) *</Label>
+                  <Input type="number" step="0.1" {...register("labelHeightMm", { valueAsNumber: true })} />
+                  {errors.labelHeightMm && <p className="text-sm text-destructive">{errors.labelHeightMm.message}</p>}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Thickness (mm)
-                  </label>
-                  <input
-                    {...register("labelThicknessMm", { valueAsNumber: true })}
-                    type="number"
-                    step="0.1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <Label>Thickness (mm)</Label>
+                  <Input type="number" step="0.1" {...register("labelThicknessMm", { valueAsNumber: true })} />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity *
-                  </label>
-                  <input
-                    {...register("labelQuantity", { valueAsNumber: true })}
-                    type="number"
-                    min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <Label>Quantity *</Label>
+                  <Input type="number" min="1" {...register("labelQuantity", { valueAsNumber: true })} />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Background Color
-                  </label>
-                  <select
-                    {...register("labelColourBackground")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="WHITE">White</option>
-                    <option value="BLACK">Black</option>
-                    <option value="RED">Red</option>
-                    <option value="BLUE">Blue</option>
-                    <option value="GREEN">Green</option>
-                    <option value="YELLOW">Yellow</option>
-                  </select>
+                <div className="space-y-2">
+                  <Label>Background Color</Label>
+                  <Select value={watch("labelColourBackground")} onValueChange={(value) => setValue("labelColourBackground", value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="WHITE">White</SelectItem>
+                      <SelectItem value="BLACK">Black</SelectItem>
+                      <SelectItem value="RED">Red</SelectItem>
+                      <SelectItem value="BLUE">Blue</SelectItem>
+                      <SelectItem value="GREEN">Green</SelectItem>
+                      <SelectItem value="YELLOW">Yellow</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Text Color
-                  </label>
-                  <select
-                    {...register("textColour")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="BLACK">Black</option>
-                    <option value="WHITE">White</option>
-                    <option value="RED">Red</option>
-                    <option value="BLUE">Blue</option>
-                    <option value="GREEN">Green</option>
-                    <option value="YELLOW">Yellow</option>
-                  </select>
+                <div className="space-y-2">
+                  <Label>Text Color</Label>
+                  <Select value={watch("textColour")} onValueChange={(value) => setValue("textColour", value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BLACK">Black</SelectItem>
+                      <SelectItem value="WHITE">White</SelectItem>
+                      <SelectItem value="RED">Red</SelectItem>
+                      <SelectItem value="BLUE">Blue</SelectItem>
+                      <SelectItem value="GREEN">Green</SelectItem>
+                      <SelectItem value="YELLOW">Yellow</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Style
-                  </label>
-                  <select
-                    {...register("style")}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="Adhesive">Adhesive</option>
-                    <option value="Non Adhesive">Non Adhesive</option>
-                  </select>
+                <div className="space-y-2">
+                  <Label>Style</Label>
+                  <Select value={watch("style")} onValueChange={(value) => setValue("style", value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Adhesive">Adhesive</SelectItem>
+                      <SelectItem value="Non Adhesive">Non Adhesive</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Number of Holes
-                  </label>
-                  <input
-                    {...register("noOfHoles", { valueAsNumber: true })}
-                    type="number"
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <Label>Number of Holes</Label>
+                  <Input type="number" min="0" {...register("noOfHoles", { valueAsNumber: true })} />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Hole Size (mm)
-                  </label>
-                  <input
-                    {...register("holeSizeMm", { valueAsNumber: true })}
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <Label>Hole Size (mm)</Label>
+                  <Input type="number" step="0.1" min="0" {...register("holeSizeMm", { valueAsNumber: true })} />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Hole Distance (mm)
-                  </label>
-                  <input
-                    {...register("holeDistanceMm", { valueAsNumber: true })}
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                <div className="space-y-2">
+                  <Label>Hole Distance (mm)</Label>
+                  <Input type="number" step="0.1" min="0" {...register("holeDistanceMm", { valueAsNumber: true })} />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md font-medium"
-              >
-                Continue to Step 2 →
-              </button>
+            <div className="flex justify-between pt-4">
+              <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+              <Button type="submit">
+                Continue to Step 2
+                <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Button>
             </div>
           </form>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (step === 2) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} -
-              Step 2 of 2
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Add and configure text lines
-            </p>
-          </div>
+      <Dialog open={true} onOpenChange={onCancel}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingIndex !== null ? "Edit Label Setup" : "New Label Setup"} - Step 2 of 2</DialogTitle>
+            <DialogDescription>Add and configure text lines</DialogDescription>
+          </DialogHeader>
 
-          <div className="p-6">
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Text Lines ({lines.length})
-                </h3>
-                <button
-                  type="button"
-                  onClick={addLine}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  + Add Line
-                </button>
-              </div>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="font-medium text-foreground">Text Lines ({lines.length})</h3>
+              <Button type="button" variant="outline" size="sm" onClick={addLine}>
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Line
+              </Button>
+            </div>
 
-              <div className="space-y-4">
-                {lines.map((line, index) => (
-                  <div
-                    key={index}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                        Line {index + 1}
-                      </span>
+            <div className="space-y-4">
+              {lines.map((line, index) => (
+                <Card key={index} className="border-border/50">
+                  <CardContent className="pt-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <Badge>Line {index + 1}</Badge>
                       {lines.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeLine(index)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
+                        <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => removeLine(index)}>
                           Remove
-                        </button>
+                        </Button>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Text Content
-                        </label>
-                        <input
-                          type="text"
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <Label>Text Content</Label>
+                        <Input
                           value={line.text}
-                          onChange={(e) =>
-                            updateLine(index, "text", e.target.value)
-                          }
-                          placeholder="Enter text for this line"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          onChange={(e) => updateLine(index, "text", e.target.value)}
+                          placeholder="Enter text"
                         />
                       </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Text Size (mm)
-                        </label>
-                        <input
+                      <div className="space-y-2">
+                        <Label>Text Size (mm)</Label>
+                        <Input
                           type="number"
                           step="0.1"
                           min="0"
                           value={line.textSizeMm}
-                          onChange={(e) =>
-                            updateLine(
-                              index,
-                              "textSizeMm",
-                              parseFloat(e.target.value)
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          onChange={(e) => updateLine(index, "textSizeMm", parseFloat(e.target.value))}
                         />
                       </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Spacing Top
-                        </label>
-                        <input
-                          type="text"
+                      <div className="space-y-2">
+                        <Label>Spacing Top</Label>
+                        <Input
                           value={line.spacingTopMm}
-                          onChange={(e) =>
-                            updateLine(index, "spacingTopMm", e.target.value)
-                          }
-                          placeholder="AUTO or number in mm"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          onChange={(e) => updateLine(index, "spacingTopMm", e.target.value)}
+                          placeholder="AUTO"
                         />
                       </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Spacing Left
-                        </label>
-                        <input
-                          type="text"
+                      <div className="space-y-2">
+                        <Label>Spacing Left</Label>
+                        <Input
                           value={line.spacingLeftMm}
-                          onChange={(e) =>
-                            updateLine(index, "spacingLeftMm", e.target.value)
-                          }
-                          placeholder="AUTO or number in mm"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          onChange={(e) => updateLine(index, "spacingLeftMm", e.target.value)}
+                          placeholder="AUTO"
                         />
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
 
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                ← Back to Step 1
-              </button>
-              <div className="space-x-3">
-                <button
-                  type="button"
-                  onClick={onCancel}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleStep2Submit}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md font-medium"
-                >
+            <div className="flex justify-between pt-4">
+              <Button type="button" variant="ghost" onClick={() => setStep(1)}>
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Step 1
+              </Button>
+              <div className="space-x-2">
+                <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+                <Button type="button" onClick={handleStep2Submit}>
                   {editingIndex !== null ? "Update Setup" : "Create Setup"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 

@@ -62,7 +62,9 @@
       "Bash(echo:*)",
       "Bash(del:*)",
       "Bash(ls:*)",
-      "mcp__chrome-devtools__fill"
+      "mcp__chrome-devtools__fill",
+      "Bash(git restore:*)",
+      "Bash(git pull:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

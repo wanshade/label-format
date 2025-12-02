@@ -16,44 +16,34 @@ export async function generateExcelBufferFromLabelSetups(
 
     const write = (value: any) => {
       const cellAddress = XLSX.utils.encode_cell({ r: row - 1, c: col });
-
-      // Get the original cell if it exists
-      const originalCell = ws[cellAddress];
-
-      if (originalCell) {
-        // Preserve all original cell properties, only update the value
-        const preservedCell = { ...originalCell };
-        preservedCell.v = value ?? "";
-
-        // Update cell type based on value
-        if (value !== null && value !== undefined && value !== "") {
-          preservedCell.t = typeof value === "number" ? "n" : "s";
-        } else {
-          preservedCell.t = "s"; // Default to string for empty values
-        }
-
-        ws[cellAddress] = preservedCell;
-      } else {
-        // Create new cell if original doesn't exist
-        ws[cellAddress] = {
-          t: typeof value === "number" ? "n" : "s",
-          v: value ?? ""
-        };
-      }
+      
+      // Simply set the cell value directly
+      ws[cellAddress] = {
+        t: typeof value === "number" ? "n" : "s",
+        v: value ?? ""
+      };
 
       col++;
     };
 
-    // Global properties
+    // Global properties - log everything being written
+    console.log(`Row ${row} data:`, {
+      labelLengthMm: item.labelLengthMm,
+      labelHeightMm: item.labelHeightMm,
+      labelThicknessMm: item.labelThicknessMm,
+      labelColourBackground: item.labelColourBackground,
+      textColour: item.textColour,
+      labelQuantity: item.labelQuantity,
+      style: item.style,
+    });
+    
     write(item.labelLengthMm);
     write(item.labelHeightMm);
     write(item.labelThicknessMm);
     write(item.labelColourBackground);
     write(item.textColour);
     write(item.labelQuantity);
-    // Convert "Static" to "Non Adhesive" for consistency
-    const displayStyle = item.style === "Static" ? "Non Adhesive" : item.style;
-    write(displayStyle);
+    write(item.style || "Adhesive");
     write(item.noOfHoles);
     write(item.holeSizeMm);
     write(item.holeDistanceMm);

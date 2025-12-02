@@ -2,11 +2,26 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { db } from "@/db";
-import { labelSetups } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface LabelSetup {
   id: string;
@@ -34,6 +49,7 @@ interface LabelSetup {
 export default function DataPage() {
   const [setups, setSetups] = useState<LabelSetup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,115 +69,130 @@ export default function DataPage() {
     fetchData();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this setup?")) {
-      try {
-        const response = await fetch(`/api/label-setups/${id}`, {
-          method: "DELETE",
-        });
-        if (response.ok) {
-          // Refresh the data
-          setSetups(setups.filter(setup => setup.id !== id));
-        }
-      } catch (error) {
-        console.error("Error deleting setup:", error);
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      const response = await fetch(`/api/label-setups/${deleteId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setSetups(setups.filter(setup => setup.id !== deleteId));
       }
+    } catch (error) {
+      console.error("Error deleting setup:", error);
+    } finally {
+      setDeleteId(null);
     }
   };
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="border-4 border-dashed border-gray-200 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Label Setups</h1>
-          <div className="space-x-4">
-            <Link
-              href="/data/new"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              + New
-            </Link>
-            <a
-              href="/api/export"
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Label Setups</h1>
+          <p className="text-muted-foreground mt-1">View and manage all your label configurations</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <a href="/api/export">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               Export Excel
             </a>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Loading...</p>
-          </div>
-        ) : setups.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No label setups found</p>
-            <Link
-              href="/data/new"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Create your first setup
+          </Button>
+          <Button asChild>
+            <Link href="/data/new">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Setup
             </Link>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Style
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Label Size
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+          </Button>
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>All Setups</CardTitle>
+          <CardDescription>A list of all label setups in your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : setups.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted flex items-center justify-center">
+                <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No label setups found</h3>
+              <p className="text-muted-foreground mb-6">Create your first label setup to get started</p>
+              <Button asChild>
+                <Link href="/data/new">Create Your First Setup</Link>
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Style</TableHead>
+                  <TableHead>Label Size</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {setups.map((setup) => (
-                  <tr key={setup.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {setup.style || "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {setup.labelLengthMm} × {setup.labelHeightMm} mm
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {setup.labelQuantity}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <TableRow key={setup.id}>
+                    <TableCell>
+                      <Badge variant="outline">{setup.style || "-"}</Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {setup.labelLengthMm} x {setup.labelHeightMm} mm
+                    </TableCell>
+                    <TableCell>{setup.labelQuantity}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {new Date(setup.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <span
-                        className="text-gray-400 mr-4 cursor-not-allowed"
-                        title="Edit functionality coming soon"
-                      >
-                        Edit
-                      </span>
-                      <button
-                        onClick={() => handleDelete(setup.id)}
-                        className="text-red-600 hover:text-red-900"
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setDeleteId(setup.id)}
                       >
                         Delete
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Setup</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this label setup? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

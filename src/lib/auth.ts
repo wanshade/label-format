@@ -44,13 +44,10 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
+  debug: true,
   session: {
     strategy: "jwt",
     maxAge: 24 * 60 * 60, // 24 hours
-  },
-  jwt: {
-    maxAge: 24 * 60 * 60, // 24 hours
-    secret: process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {

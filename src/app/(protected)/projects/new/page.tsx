@@ -3,6 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -43,72 +49,76 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="mb-6">
-        <Link
-          href="/"
-          className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-        >
-          ← Back to projects
-        </Link>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">Create New Project</h1>
-        <p className="text-gray-600 mt-1">Create a new project to organize your label setups</p>
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-8">
+        <Button variant="ghost" size="sm" asChild className="mb-4">
+          <Link href="/dashboard">
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </Link>
+        </Button>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Create New Project</h1>
+        <p className="text-muted-foreground mt-2">Create a new project to organize your label setups</p>
       </div>
 
-      <div className="border-4 border-dashed border-gray-200 rounded-lg p-6">
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-              {error}
+      <Card>
+        <CardHeader>
+          <CardTitle>Project Details</CardTitle>
+          <CardDescription>Fill in the information for your new project</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Project Name *</Label>
+              <Input
+                id="name"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g., Summer Collection 2025"
+              />
             </div>
-          )}
 
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Project Name *
-            </label>
-            <input
-              type="text"
-              id="name"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="e.g., Summer Collection 2025"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (optional)</Label>
+              <Textarea
+                id="description"
+                rows={4}
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Brief description of this project..."
+              />
+            </div>
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-              Description (optional)
-            </label>
-            <textarea
-              id="description"
-              rows={3}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              placeholder="Brief description of this project..."
-            />
-          </div>
-
-          <div className="flex justify-end space-x-3">
-            <Link
-              href="/"
-              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-              {loading ? "Creating..." : "Create Project"}
-            </button>
-          </div>
-        </form>
-      </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" asChild>
+                <Link href="/dashboard">Cancel</Link>
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Creating...
+                  </>
+                ) : (
+                  "Create Project"
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

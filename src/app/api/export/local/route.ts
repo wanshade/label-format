@@ -20,6 +20,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid label setups data" }, { status: 400 });
     }
 
+    // Debug: Log all label setups being exported
+    console.log("=== EXPORT DEBUG ===");
+    labelSetups.forEach((setup: any, index: number) => {
+      console.log(`Setup ${index + 1}: style="${setup.style}", bg="${setup.labelColourBackground}", text="${setup.textColour}"`);
+    });
+    console.log("====================");
+
     // Load template file
     const templatePath = path.join(process.cwd(), "public", "MLA-Setup-Sheet.xlsx");
 

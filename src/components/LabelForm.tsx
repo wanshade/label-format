@@ -6,6 +6,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { LabelLine, CreateLabelSetupRequest } from "@/types/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const labelSetupSchema = z.object({
   projectId: z.string().min(1, "Project is required"),
@@ -50,7 +62,7 @@ const defaultLines: LabelLine[] = [{
   spacingLeftMm: "AUTO",
 }];
 
-export default function LabelForm({ initialData, onSubmit, submitButtonText }: LabelFormProps) {
+export default function LabelForm({ initialData, onSubmit, submitButtonText, projects }: LabelFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const router = useRouter();
@@ -59,10 +71,13 @@ export default function LabelForm({ initialData, onSubmit, submitButtonText }: L
     register,
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<LabelSetupFormData>({
     resolver: zodResolver(labelSetupSchema),
     defaultValues: {
+      projectId: initialData?.projectId ?? "",
       labelLengthMm: initialData?.labelLengthMm ?? 0,
       labelHeightMm: initialData?.labelHeightMm ?? 0,
       labelThicknessMm: initialData?.labelThicknessMm ?? 0.8,
@@ -82,7 +97,6 @@ export default function LabelForm({ initialData, onSubmit, submitButtonText }: L
     name: "lines",
   });
 
-  // Helper for number input registration
   const registerNumberInput = (name: keyof LabelSetupFormData) => ({
     ...register(name, {
       valueAsNumber: true,
@@ -98,7 +112,6 @@ export default function LabelForm({ initialData, onSubmit, submitButtonText }: L
     setError("");
 
     try {
-      // Convert any undefined/empty values to null or 0 for Excel export
       const processedData = {
         projectId: data.projectId,
         name: data.name,
@@ -129,280 +142,205 @@ export default function LabelForm({ initialData, onSubmit, submitButtonText }: L
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-            {error}
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Project Selection</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label>Project *</Label>
+            <Select value={watch("projectId")} onValueChange={(value) => setValue("projectId", value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a project" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.projectId && <p className="text-sm text-destructive">{errors.projectId.message}</p>}
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* Global Properties */}
-        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Label Properties
-          </h3>
-          <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-5 sm:gap-x-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Label Length (mm)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                {...registerNumberInput("labelLengthMm")}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="0"
-              />
+      <Card>
+        <CardHeader>
+          <CardTitle>Label Properties</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <Label>Label Length (mm)</Label>
+              <Input type="number" step="0.1" placeholder="0" {...registerNumberInput("labelLengthMm")} />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Label Height (mm)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                {...registerNumberInput("labelHeightMm")}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                placeholder="0"
-              />
+            <div className="space-y-2">
+              <Label>Label Height (mm)</Label>
+              <Input type="number" step="0.1" placeholder="0" {...registerNumberInput("labelHeightMm")} />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Label Thickness (mm)
-              </label>
-              <select
-                {...register("labelThicknessMm", {
-                  valueAsNumber: true,
-                  setValueAs: (value) => Number(value)
-                })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="0.8">0.8</option>
-                <option value="1.6">1.6</option>
-              </select>
+            <div className="space-y-2">
+              <Label>Label Thickness (mm)</Label>
+              <Select value={String(watch("labelThicknessMm"))} onValueChange={(value) => setValue("labelThicknessMm", parseFloat(value))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0.8">0.8</SelectItem>
+                  <SelectItem value="1.6">1.6</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Label Colour (Bg)
-              </label>
-              <select
-                {...register("labelColourBackground")}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="WHITE">WHITE</option>
-                <option value="BLACK">BLACK</option>
-                <option value="SILVER">SILVER</option>
-                <option value="YELLOW">YELLOW</option>
-                <option value="GOLD">GOLD</option>
-                <option value="GREEN">GREEN</option>
-                <option value="PINE GREEN">PINE GREEN</option>
-                <option value="BLUE">BLUE</option>
-                <option value="RED">RED</option>
-              </select>
-              {errors.labelColourBackground && (
-                <p className="mt-1 text-sm text-red-600">{errors.labelColourBackground.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>Background Color</Label>
+              <Select value={watch("labelColourBackground")} onValueChange={(value) => setValue("labelColourBackground", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WHITE">WHITE</SelectItem>
+                  <SelectItem value="BLACK">BLACK</SelectItem>
+                  <SelectItem value="SILVER">SILVER</SelectItem>
+                  <SelectItem value="YELLOW">YELLOW</SelectItem>
+                  <SelectItem value="GOLD">GOLD</SelectItem>
+                  <SelectItem value="GREEN">GREEN</SelectItem>
+                  <SelectItem value="PINE GREEN">PINE GREEN</SelectItem>
+                  <SelectItem value="BLUE">BLUE</SelectItem>
+                  <SelectItem value="RED">RED</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Text Colour
-              </label>
-              <select
-                {...register("textColour")}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="BLACK">BLACK</option>
-                <option value="WHITE">WHITE</option>
-                <option value="BLUE">BLUE</option>
-                <option value="GREEN">GREEN</option>
-                <option value="RED">RED</option>
-              </select>
-              {errors.textColour && (
-                <p className="mt-1 text-sm text-red-600">{errors.textColour.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>Text Color</Label>
+              <Select value={watch("textColour")} onValueChange={(value) => setValue("textColour", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BLACK">BLACK</SelectItem>
+                  <SelectItem value="WHITE">WHITE</SelectItem>
+                  <SelectItem value="BLUE">BLUE</SelectItem>
+                  <SelectItem value="GREEN">GREEN</SelectItem>
+                  <SelectItem value="RED">RED</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Label Quantity
-              </label>
-              <input
-                type="number"
-                {...register("labelQuantity", { valueAsNumber: true })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-              {errors.labelQuantity && (
-                <p className="mt-1 text-sm text-red-600">{errors.labelQuantity.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>Label Quantity</Label>
+              <Input type="number" {...register("labelQuantity", { valueAsNumber: true })} />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Style
-              </label>
-              <select
-                {...register("style")}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="Adhesive">Adhesive</option>
-                <option value="Non Adhesive">Non Adhesive</option>
-              </select>
-              {errors.style && (
-                <p className="mt-1 text-sm text-red-600">{errors.style.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>Style</Label>
+              <Select value={watch("style")} onValueChange={(value) => setValue("style", value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Adhesive">Adhesive</SelectItem>
+                  <SelectItem value="Non Adhesive">Non Adhesive</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                No. of Holes
-              </label>
-              <input
-                type="number"
-                {...register("noOfHoles", { valueAsNumber: true })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-              {errors.noOfHoles && (
-                <p className="mt-1 text-sm text-red-600">{errors.noOfHoles.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>No. of Holes</Label>
+              <Input type="number" {...register("noOfHoles", { valueAsNumber: true })} />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Hole Size (mm)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                {...register("holeSizeMm", { valueAsNumber: true })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-              {errors.holeSizeMm && (
-                <p className="mt-1 text-sm text-red-600">{errors.holeSizeMm.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>Hole Size (mm)</Label>
+              <Input type="number" step="0.1" {...register("holeSizeMm", { valueAsNumber: true })} />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Hole Distance (mm)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                {...register("holeDistanceMm", { valueAsNumber: true })}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-              {errors.holeDistanceMm && (
-                <p className="mt-1 text-sm text-red-600">{errors.holeDistanceMm.message}</p>
-              )}
+            <div className="space-y-2">
+              <Label>Hole Distance (mm)</Label>
+              <Input type="number" step="0.1" {...register("holeDistanceMm", { valueAsNumber: true })} />
             </div>
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Lines */}
-        <div className="bg-white shadow px-4 py-5 sm:rounded-lg sm:p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Text Lines
-            </h3>
-            <button
-              type="button"
-              onClick={() => append({
-                text: "",
-                textSizeMm: 0,
-                spacingTopMm: "AUTO",
-                spacingLeftMm: "AUTO",
-              })}
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              Add Line
-            </button>
-          </div>
-          <div className="space-y-6">
-            {fields.map((field, index) => (
-              <div key={field.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-md font-medium text-gray-900">
-                    Line {index + 1}
-                  </h4>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Text Lines</CardTitle>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => append({
+              text: "",
+              textSizeMm: 0,
+              spacingTopMm: "AUTO",
+              spacingLeftMm: "AUTO",
+            })}
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Line
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {fields.map((field, index) => (
+            <Card key={field.id} className="border-border/50">
+              <CardContent className="pt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h4 className="font-medium">Line {index + 1}</h4>
                   {fields.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => remove(index)}
-                      className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-600 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
+                    <Button type="button" variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => remove(index)}>
                       Remove
-                    </button>
+                    </Button>
                   )}
                 </div>
-                <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-4 sm:gap-x-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Text
-                    </label>
-                    <input
-                      type="text"
-                      {...register(`lines.${index}.text`)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-2">
+                    <Label>Text</Label>
+                    <Input {...register(`lines.${index}.text`)} />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Text Size (mm)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      {...register(`lines.${index}.textSizeMm`, { valueAsNumber: true })}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
+                  <div className="space-y-2">
+                    <Label>Text Size (mm)</Label>
+                    <Input type="number" step="0.1" {...register(`lines.${index}.textSizeMm`, { valueAsNumber: true })} />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Spacing Top (mm)
-                    </label>
-                    <input
-                      type="text"
-                      {...register(`lines.${index}.spacingTopMm`)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      placeholder="AUTO"
-                    />
+                  <div className="space-y-2">
+                    <Label>Spacing Top (mm)</Label>
+                    <Input {...register(`lines.${index}.spacingTopMm`)} placeholder="AUTO" />
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Spacing Left (mm)
-                    </label>
-                    <input
-                      type="text"
-                      {...register(`lines.${index}.spacingLeftMm`)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                      placeholder="AUTO"
-                    />
+                  <div className="space-y-2">
+                    <Label>Spacing Left (mm)</Label>
+                    <Input {...register(`lines.${index}.spacingLeftMm`)} placeholder="AUTO" />
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              </CardContent>
+            </Card>
+          ))}
+        </CardContent>
+      </Card>
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {loading ? "Saving..." : submitButtonText}
-          </button>
-        </div>
-      </form>
-    </div>
+      <div className="flex justify-end">
+        <Button type="submit" size="lg" disabled={loading}>
+          {loading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Saving...
+            </>
+          ) : submitButtonText}
+        </Button>
+      </div>
+    </form>
   );
 }
