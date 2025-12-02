@@ -264,12 +264,13 @@ function generateSheetDxf(sheet: DxfSheet, sheetConfig: SheetConfig = DEFAULT_SH
   return dxf.stringify();
 }
 
-// Group key for separating by color/thickness
+// Group key for separating by color/thickness/style
 function getGroupKey(setup: LabelSetup): string {
   const text = setup.textColour || "Black";
   const bg = setup.labelColourBackground || "White";
   const thickness = setup.labelThicknessMm || 0.8;
-  return `${text}|${bg}|${thickness}`;
+  const style = setup.style || "Adhesive";
+  return `${text}|${bg}|${thickness}|${style}`;
 }
 
 // Main export function
@@ -292,7 +293,7 @@ export function generateDxfFiles(
 
   // Process each group separately
   for (const [key, groupSetups] of groups) {
-    const [textColour, bgColour, thicknessStr] = key.split("|");
+    const [textColour, bgColour, thicknessStr, style] = key.split("|");
     const thickness = parseFloat(thicknessStr);
     
     // Arrange labels for this group
@@ -300,9 +301,10 @@ export function generateDxfFiles(
     
     for (const sheet of sheets) {
       const dxfContent = generateSheetDxf(sheet, sheetConfig);
-      // Format: MLA {textColour} on {bgColour} {thickness}mm {pageNumber}.dxf
+      // Format: MLA {textColour} on {bgColour} {thickness}mm [Non AD] {pageNumber}.dxf
       const pageNum = String(sheet.pageNumber).padStart(2, "0");
-      const filename = `MLA ${textColour} on ${bgColour} ${thickness}mm ${pageNum}.dxf`;
+      const styleSuffix = style === "Non Adhesive" ? " Non AD" : "";
+      const filename = `MLA ${textColour} on ${bgColour} ${thickness}mm${styleSuffix} ${pageNum}.dxf`;
       
       files.push({ filename, content: dxfContent });
     }

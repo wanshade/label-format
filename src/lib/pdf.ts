@@ -81,12 +81,13 @@ function colorNameToRgb(colorName: string): { r: number; g: number; b: number } 
   return colors[normalized] || { r: 0, g: 0, b: 0 }; // Default to black
 }
 
-// Group key for separating by color/thickness
+// Group key for separating by color/thickness/style
 function getGroupKey(setup: LabelSetup): string {
   const text = setup.textColour || "Black";
   const bg = setup.labelColourBackground || "White";
   const thickness = setup.labelThicknessMm || 0.8;
-  return `${text}|${bg}|${thickness}`;
+  const style = setup.style || "Adhesive";
+  return `${text}|${bg}|${thickness}|${style}`;
 }
 
 // Arrange labels on sheets (same logic as DXF)
@@ -312,7 +313,7 @@ export async function generatePdfFiles(
 
   // Process each group separately
   for (const [key, groupSetups] of groups) {
-    const [textColour, bgColour, thicknessStr] = key.split("|");
+    const [textColour, bgColour, thicknessStr, style] = key.split("|");
     const thickness = parseFloat(thicknessStr);
     
     const sheets = arrangeLabelsOnSheets(groupSetups, sheetConfig);
@@ -321,7 +322,8 @@ export async function generatePdfFiles(
       const pdfContent = await generateSheetPdf(sheets[i], sheetConfig);
       
       const pageNum = String(i + 1).padStart(2, "0");
-      const filename = `MLA ${textColour} on ${bgColour} ${thickness}mm ${pageNum}.pdf`;
+      const styleSuffix = style === "Non Adhesive" ? " Non AD" : "";
+      const filename = `MLA ${textColour} on ${bgColour} ${thickness}mm${styleSuffix} ${pageNum}.pdf`;
       
       files.push({ filename, content: pdfContent });
     }
