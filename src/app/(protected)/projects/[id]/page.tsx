@@ -405,6 +405,7 @@ export default function ProjectPage() {
   };
 
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [reloadLoading, setReloadLoading] = useState(false);
 
   const exportToPdf = async () => {
     if (!projectData?.labelSetups.length) {
@@ -443,6 +444,30 @@ export default function ProjectPage() {
       toast.error("Failed to export PDF");
     } finally {
       setPdfLoading(false);
+    }
+  };
+
+  const reloadFromDatabase = async () => {
+    setReloadLoading(true);
+    try {
+      const response = await fetch(`/api/projects/${projectId}`);
+      if (response.ok) {
+        const project = await response.json();
+        const setupsResponse = await fetch(`/api/label-setups?projectId=${projectId}`);
+        const labelSetups = setupsResponse.ok ? await setupsResponse.json() : [];
+
+        const newData = { project, labelSetups, isSaved: true };
+        setProjectData(newData);
+        localStorage.setItem(`project-${projectId}`, JSON.stringify(newData));
+        toast.success("Reloaded from database");
+      } else {
+        toast.error("Failed to reload from database");
+      }
+    } catch (err) {
+      console.error("Error reloading from database:", err);
+      toast.error("Failed to reload from database");
+    } finally {
+      setReloadLoading(false);
     }
   };
 
@@ -552,6 +577,11 @@ export default function ProjectPage() {
             </Button>
             <Button size="sm" onClick={saveToDatabase} disabled={saveLoading || projectData.isSaved}>
               {saveLoading ? "Saving..." : projectData.isSaved ? "Saved" : "Save"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={reloadFromDatabase} disabled={reloadLoading} title="Reload from database">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
             </Button>
             {viewMode === "card" && (
               <Button size="sm" onClick={addLabelSetup}>
