@@ -532,8 +532,9 @@ export default function ExcelModeEditor({ labelSetups, onUpdate, projectId }: Ex
 
   const toggleRowSelection = useCallback((index: number, multi: boolean) => {
     setSelectedRows(prev => {
+      const wasSelected = prev.has(index);
       const next = new Set(multi ? prev : []);
-      if (next.has(index)) {
+      if (wasSelected) {
         next.delete(index);
       } else {
         next.add(index);
