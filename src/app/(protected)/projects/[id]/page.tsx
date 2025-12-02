@@ -60,7 +60,9 @@ export default function ProjectPage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [deleteSetupIndex, setDeleteSetupIndex] = useState<number | null>(null);
   const [collapsedSetups, setCollapsedSetups] = useState<Set<number>>(new Set());
+  const [importLoading, setImportLoading] = useState(false);
   const newSetupNameRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -281,6 +283,44 @@ export default function ProjectPage() {
     }
   };
 
+  const importFromExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !projectData) return;
+
+    setImportLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/import", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const { labelSetups } = await response.json();
+        const setupsWithProjectId = labelSetups.map((setup: any, index: number) => ({
+          ...setup,
+          projectId,
+          name: setup.name || `Imported ${index + 1}`,
+        }));
+        setProjectData({
+          ...projectData,
+          labelSetups: [...projectData.labelSetups, ...setupsWithProjectId],
+          isSaved: false,
+        });
+        toast.success(`Imported ${labelSetups.length} setup(s)`);
+      } else {
+        toast.error("Failed to import Excel file");
+      }
+    } catch (err) {
+      toast.error("Failed to import Excel file");
+    } finally {
+      setImportLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const exportToExcel = async () => {
     try {
       const response = await fetch("/api/export/local", {
@@ -353,6 +393,19 @@ export default function ProjectPage() {
             )}
           </div>
           <div className="flex gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={importFromExcel}
+              className="hidden"
+            />
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={importLoading}>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              {importLoading ? "Importing..." : "Import"}
+            </Button>
             <Button variant="outline" size="sm" onClick={exportToExcel}>
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
