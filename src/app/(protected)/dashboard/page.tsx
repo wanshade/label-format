@@ -108,28 +108,29 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1">
+      <div>
+        <h1 className="text-2xl font-semibold mb-1">Projects</h1>
+        <p className="text-muted-foreground text-sm">Manage your label projects</p>
+      </div>
+
+      {/* Search */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
           <Input
             placeholder="Search projects..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs h-9"
+            className="pl-9 h-10"
           />
-          <span className="text-sm text-muted-foreground">
-            {projects.length} project{projects.length !== 1 ? 's' : ''}
-          </span>
         </div>
-        <Button size="sm" asChild>
-          <Link href="/projects/new">
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            New Project
-          </Link>
-        </Button>
+        <span className="text-sm text-muted-foreground">
+          {projects.length} project{projects.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
       {/* Projects List */}
