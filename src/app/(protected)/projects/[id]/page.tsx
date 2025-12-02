@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { LabelSetup } from "@/components/LabelSetupWizard";
+import ExcelModeEditor from "@/components/ExcelModeEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+type ViewMode = "card" | "excel";
+
 interface Project {
   id: string;
   name: string;
@@ -61,6 +64,7 @@ export default function ProjectPage() {
   const [deleteSetupIndex, setDeleteSetupIndex] = useState<number | null>(null);
   const [collapsedSetups, setCollapsedSetups] = useState<Set<number>>(new Set());
   const [importLoading, setImportLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
   const newSetupNameRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -210,6 +214,15 @@ export default function ProjectPage() {
       isSaved: false,
     });
     toast.success("Setup duplicated");
+  };
+
+  const handleExcelUpdate = (updatedSetups: LabelSetup[]) => {
+    if (!projectData) return;
+    setProjectData({
+      ...projectData,
+      labelSetups: updatedSetups,
+      isSaved: false,
+    });
   };
 
   const deleteLabelSetup = () => {
@@ -391,8 +404,43 @@ export default function ProjectPage() {
             {!projectData.isSaved && (
               <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">Unsaved</Badge>
             )}
+            <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full">
+              <span className="text-xs text-muted-foreground">Total Qty:</span>
+              <span className="text-sm font-semibold text-primary">
+                {projectData.labelSetups.reduce((sum, setup) => sum + (Number(setup.labelQuantity) || 0), 0)}
+              </span>
+            </div>
           </div>
           <div className="flex gap-2">
+            {/* View Mode Toggle */}
+            <div className="flex border rounded-md overflow-hidden">
+              <button
+                onClick={() => setViewMode("card")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === "card"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+                title="Card View"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("excel")}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                  viewMode === "excel"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+                title="Excel View"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
             <input
               ref={fileInputRef}
               type="file"
@@ -415,18 +463,26 @@ export default function ProjectPage() {
             <Button size="sm" onClick={saveToDatabase} disabled={saveLoading || projectData.isSaved}>
               {saveLoading ? "Saving..." : projectData.isSaved ? "Saved" : "Save"}
             </Button>
-            <Button size="sm" onClick={addLabelSetup}>
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Add Setup
-            </Button>
+            {viewMode === "card" && (
+              <Button size="sm" onClick={addLabelSetup}>
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Setup
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
       {/* Label Setups */}
-      {projectData.labelSetups.length === 0 ? (
+      {viewMode === "excel" ? (
+        <ExcelModeEditor
+          labelSetups={projectData.labelSetups}
+          onUpdate={handleExcelUpdate}
+          projectId={projectId}
+        />
+      ) : projectData.labelSetups.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground mb-4">No label setups yet</p>
