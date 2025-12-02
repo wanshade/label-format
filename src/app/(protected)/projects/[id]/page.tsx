@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { LabelSetup } from "@/components/LabelSetupWizard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -206,6 +207,7 @@ export default function ProjectPage() {
       labelSetups: [...projectData.labelSetups.slice(0, index + 1), copiedSetup, ...projectData.labelSetups.slice(index + 1)],
       isSaved: false,
     });
+    toast.success("Setup duplicated");
   };
 
   const deleteLabelSetup = () => {
@@ -216,6 +218,7 @@ export default function ProjectPage() {
       isSaved: false,
     });
     setDeleteSetupIndex(null);
+    toast.success("Setup deleted");
   };
 
   const saveToDatabase = async () => {
@@ -268,8 +271,11 @@ export default function ProjectPage() {
       );
 
       setProjectData({ ...projectData, isSaved: true });
+      toast.success("Saved to database");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save to database");
+      const message = err instanceof Error ? err.message : "Failed to save to database";
+      setError(message);
+      toast.error(message);
     } finally {
       setSaveLoading(false);
     }
@@ -293,9 +299,13 @@ export default function ProjectPage() {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        toast.success("Exported to Excel");
+      } else {
+        toast.error("Failed to export");
       }
     } catch (err) {
       setError("Failed to export to Excel");
+      toast.error("Failed to export to Excel");
     }
   };
 

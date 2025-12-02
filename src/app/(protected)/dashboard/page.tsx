@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,9 +56,13 @@ export default function DashboardPage() {
       });
       if (response.ok) {
         setProjects(projects.filter(project => project.id !== deleteId));
+        toast.success("Project deleted");
+      } else {
+        toast.error("Failed to delete project");
       }
     } catch (error) {
       console.error("Error deleting project:", error);
+      toast.error("Failed to delete project");
     } finally {
       setDeleteId(null);
     }
